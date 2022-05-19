@@ -10,7 +10,7 @@ You need to create a module of the `custom/script` type, and with the `tail` pro
 <pre lang=ini>[module/polywins]
 type = custom/script
 exec = ~/.config/polybar/scripts/polywins.py $MONITOR
-format = <label>
+format = \<label>
 label = %output%
 label-padding = 0
 tail = true</pre>
