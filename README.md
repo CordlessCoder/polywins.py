@@ -2,6 +2,7 @@
 A polywins inspired workspace AND window lister, written in Python. Heavy WIP.
 
 <img align="right" src="https://raw.githubusercontent.com/CordlessCoder/polywins.py/main/screenshot.png">
+
 ## Adding to polybar
 
 You need to create a module of the `custom/script` type, and with the `tail` property set to true.
