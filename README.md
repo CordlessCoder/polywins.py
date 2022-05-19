@@ -37,3 +37,9 @@ fi</pre>
 
 and in your main bar:
 <pre lang=ini>monitor = ${env:MONITOR:}</pre>
+
+# TODO:
+
+[] translate window classes to icons
+[] group windows of the same class on the same workspace together
+[] expanding on the previous idea, when windows are grouped, iterate over all windows on click
