@@ -1,5 +1,6 @@
 # polywins.py
 A polywins inspired workspace AND window lister, written in Python. Heavy WIP.
+Mouse actions set up for BSPWM, but easy to port to other WMs.
 
 <img align="right" src="https://raw.githubusercontent.com/CordlessCoder/polywins.py/main/screenshot.png">
 
