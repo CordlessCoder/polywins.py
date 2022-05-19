@@ -85,7 +85,6 @@ def get_workspaces(monitor=None):
         workspaces = [
             " ".join(line[line.rfind("WA:") :].split(" ")[2:])[1:-1] for line in wml
         ]
-        print(workspaces)
         active_workspace = 0
         for line in wml:
             if line[3] == "*":
