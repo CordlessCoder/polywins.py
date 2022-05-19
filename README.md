@@ -7,13 +7,15 @@ A polywins inspired workspace AND window lister, written in Python. Heavy WIP.
 
 You need to create a module of the `custom/script` type, and with the `tail` property set to true.
 #### Example:
-<pre lang=ini>```[module/polywins]
+```ini
+[module/polywins]
 type = custom/script
 exec = ~/.config/polybar/scripts/polywins.py $MONITOR
 format = <label>
 label = %output%
 label-padding = 0
-tail = true```</pre>
+tail = true
+```
 
 You will also need to use a script to make sure polybar runs on all montitors and knows what monitor it's on.
 #### Example:
