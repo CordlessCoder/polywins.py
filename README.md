@@ -2,7 +2,7 @@
 A polywins inspired workspace AND window lister, written in Python. Heavy WIP.
 Mouse actions set up for BSPWM, but easy to port to other WMs.
 
-<img align="right" src="https://raw.githubusercontent.com/CordlessCoder/polywins.py/main/screenshot.png">
+<img align="right" src="https://raw.githubusercontent.com/CordlessCoder/polywins.py/26d6fe50efcc901577540346eef61d5a44f8f7aa/screenshot.png">
 
 ## Adding to polybar
 
