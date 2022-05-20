@@ -23,7 +23,7 @@ show = "window_class"  # options: window_title, window_class, window_classname
 forbidden_classes = "Polybar Conky Gmrun Pavucontrol".lower().split(" ")
 hide_unpopulated_desktops = False
 iconize = True
-hide_name = True  # Controls whether to hide window names when an icon is present
+hide_name = False  # Controls whether to hide window names when an icon is present
 
 char_limit = 10
 max_windows = 10
@@ -77,7 +77,7 @@ class_icons = {
     "chromium": fa.icons["chrome"],
     "cura": fa.icons["cube"],
     "darktable": fa.icons["image"],
-    "discord": fa.icons["comment"],
+    "discord": fa.icons["discord"],
     "eclipse": fa.icons["code"],
     "emacs": fa.icons["code"],
     "eog": fa.icons["image"],
@@ -220,7 +220,10 @@ def wid_to_name(wid):
 def generate(workspaces, focused_win="", focused_desk="", order=[]):
     out = ""
     for workspace_id in order:
-        if len(workspaces[workspace_id][0]) < hide_unpopulated_desktops:
+        if (
+            len(workspaces[workspace_id][0]) < hide_unpopulated_desktops
+            and workspace_id != focused_desk
+        ):
             continue
         out += (
             "%{A1:"
