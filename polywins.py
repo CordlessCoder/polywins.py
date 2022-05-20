@@ -16,6 +16,7 @@ inactive_text_color = "#C0CAF5"
 inactive_bg = ""
 inactive_underline = "#C0CAF5"
 
+name_style = "upper"  # options: upper, lower, None
 separator = " "
 show = "window_classname"  # options: window_title, window_class, window_classname
 forbidden_classes = "Polybar Conky Gmrun Pavucontrol".upper().split(" ")
@@ -172,50 +173,70 @@ def ensure_len(ID, length=10):
 
 
 def wid_to_name(wid):
-    if wid is not list:
+    if not isinstance(wid, list):
         if show == "class":
-            return os.popen(f"xprop -id {wid} WM_CLASS").read().split('"')[:char_limit]
+            out = os.popen(f"xprop -id {wid} WM_CLASS").read().split('"')[:char_limit]
         if show == "window_classname":
-            return (
+            out = (
                 os.popen(f"xprop -id {wid} WM_CLASS")
                 .read()
                 .split('"')[:-1][-1][:char_limit]
             )
         if show == "window_title":
-            return (
+            out = (
                 os.popen(f"xprop -id {wid} _NET_WM_NAME")
                 .read()
                 .split('"')[1][:char_limit]
             )
+        if name_style == "upper":
+            out = out.upper()
+        elif name_style == "lower":
+            out = out.lower()
+        return out
     else:
+        out = []
         for id in wid:
             if show == "class":
-                return (
-                    os.popen(f"xprop -id {wid} WM_CLASS").read().split('"')[:char_limit]
+                out.append(
+                    os.popen(f"xprop -id {id} WM_CLASS").read().split('"')[:char_limit]
                 )
             if show == "window_classname":
-                return (
-                    os.popen(f"xprop -id {wid} WM_CLASS")
+                out.append(
+                    os.popen(f"xprop -id {id} WM_CLASS")
                     .read()
-                    .split('"')[:-1][-1][:char_limit]
+                    .split('"')[-2][:char_limit]
                 )
             if show == "window_title":
-                return (
-                    os.popen(f"xprop -id {wid} _NET_WM_NAME")
+                out.append(
+                    os.popen(f"xprop -id {id} _NET_WM_NAME")
                     .read()
                     .split('"')[1][:char_limit]
                 )
+        if name_style == "upper":
+            out = [name.upper() for name in out]
+        elif name_style == "lower":
+            out = [name.lower() for name in out]
+        return out
 
 
-def generate(workspaces, focused_win="", focused_desk=""):
+def generate(workspaces, focused_win="", focused_desk="", order=[]):
     out = ""
-    for workspace_id in workspaces.keys():
+    for workspace_id in order:
         out += separator
-        out += workspaces[workspace_id][1]
+        out += (
+            workspaces[workspace_id][1]
+            if workspace_id != focused_desk
+            else "_" + workspaces[workspace_id][1] + "_"
+        )
         if len(workspaces[workspace_id][0]) == 0:
             out += separator
         else:
-            out += ":" + " ".join(wid_to_name(workspaces[workspace_id][0]))
+            out += (
+                ":"
+                + separator
+                + (separator * 2).join(wid_to_name(workspaces[workspace_id][0]))
+                + separator
+            )
     return out
 
 
@@ -225,11 +246,13 @@ def main():
             "bspc subscribe desktop_focus desktop_add desktop_rename desktop_remove desktop_swap node_add node_remove node_swap node_transfer node_focus"
         )
         mon_id = os.popen(f"bspc query -M -m '{monitor}'").read()[:-1]
+        workspace_order = []
         workspaces = {}  # workspace ID and name pairs
         for workspace in [
             workspace[:-1]
             for workspace in os.popen(f"bspc query -D -m '{mon_id}'").readlines()
         ]:
+            workspace_order.append(workspace)
             workspaces[workspace] = (
                 [
                     window[:-1]
@@ -287,11 +310,13 @@ def main():
                         workspaces.pop(update[-1])
                     else:
                         if update[1] == mon_id and update[3] == mon_id:
-                            workspaces[update[2]], workspaces[update[4]] = (
-                                workspaces[update[4]],
-                                workspaces[update[2]],
-                            )
+                            index = workspace_order.index(update[4])
+                            workspace_order[workspace_order.index(update[2])] = update[
+                                4
+                            ]
+                            workspace_order[index] = update[2]
                         else:
+                            workspace_order = []
                             workspaces = {}  # workspace ID and name pairs
                             for workspace in [
                                 workspace[:-1]
@@ -299,6 +324,7 @@ def main():
                                     f"bspc query -D -m '{mon_id}'"
                                 ).readlines()
                             ]:
+                                workspace_order.append(workspace)
                                 workspaces[workspace] = (
                                     [
                                         window[:-1]
@@ -310,10 +336,18 @@ def main():
                                         f"bspc query -D -d {workspace} --names"
                                     ).read()[:-1],
                                 )
+                                focused_workspace = os.popen(
+                                    f"bspc query -D -m {mon_id} -d .focused"
+                                ).read()[
+                                    :-1
+                                ]  # ID of the currently focused workspace
 
             printf(
                 generate(
-                    workspaces, focused_win=focused, focused_desk=focused_workspace
+                    workspaces,
+                    focused_win=focused,
+                    focused_desk=focused_workspace,
+                    order=workspace_order,
                 )
             )
             printf("\n")
