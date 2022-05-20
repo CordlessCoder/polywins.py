@@ -186,6 +186,11 @@ def wid_to_name(wid):
         )
 
 
+def generate(workspaces):
+    out = ""
+    return out
+
+
 def main():
     if len(sys.argv) <= 2:
         command = os.popen(
@@ -278,9 +283,7 @@ def main():
                                     ).read()[:-1],
                                 )
 
-            for name in workspaces.keys():
-                print(workspaces[name])
-            print(focused_workspace)
+            print(wid_to_name())
             sys.stdout.flush()
             # break
     else:
