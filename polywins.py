@@ -20,7 +20,7 @@ inactive_underline = "#C0CAF5"
 name_style = "upper"  # options: upper, lower, None
 separator = " "
 show = "window_class"  # options: window_title, window_class, window_classname
-forbidden_classes = "Polybar Conky Gmrun Pavucontrol".upper().split(" ")
+forbidden_classes = "Polybar Conky Gmrun Pavucontrol".lower().split(" ")
 hide_unpopulated_desktops = False
 iconize = True
 hide_name = True  # Controls whether to hide window names when an icon is present
@@ -55,10 +55,6 @@ if active_underline is not None:
 if inactive_underline is not None:
     inactive_left += "%{+u}%{u" + inactive_underline + "}"
     inactive_right = "%{-u}" + inactive_right
-
-
-active_left += "%{B" + active_bg + "}"
-active_right = "%{B-}" + active_right
 
 
 on_click = " ".join(sys.argv[:2])
@@ -141,88 +137,9 @@ class_icons = {
     "zoom": fa.icons["comment"],
 }
 
-#         if workspace == workspaces[active_workspace]:
-#             printf(wps_active_left + " " + workspace)
-#         else:
-#             printf(
-#                 "%{A1:" + on_click + " switch_workspace " + workspace + ":}"
-#                 "%{A2:"
-#                 + on_click
-#                 + " swap_workspace "
-#                 + workspace
-#                 + ":}"
-#                 + wps_active_right
-#                 + active_right
-#                 + " "
-#                 + workspace
-#             )
-#         printf(" " + "%{A}%{A}")
-#     return
-# window_workspace_pairs = {}
-# for workspace in workspaces:
-#     window_workspace_pairs[workspace] = []
-# for window in windows:
-#     try:
-#         window_workspace_pairs[workspaces[wlist[window][1]]].append(window)
-#     except KeyError:
-#         pass
-# i = 0
-# for workspace in get_workspaces(monitor):
-#     if len(window_workspace_pairs[workspace]) == show_unpopulated_desktops - 1:
-#         continue
-#     i != 0 and printf(separator)
-#     i += 1
-#     if workspace == workspaces[active_workspace]:
-#         printf(wps_active_left + " " + workspace)
-#     else:
-#         printf(
-#             "%{A1:" + on_click + " switch_workspace " + workspace + ":}"
-#             "%{A2:"
-#             + on_click
-#             + " swap_workspace "
-#             + workspace
-#             + ":}"
-#             + wps_active_right
-#             + active_right
-#             + " "
-#             + workspace
-#         )
-#     if len(window_workspace_pairs[workspace]) >= 1:
-#         printf(":" + "%{A}%{A}")
-#     else:
-#         printf(" " + "%{A}%{A}")
-#     for wid in window_workspace_pairs[workspace][:max_windows]:
-#         if wlist[wid][0] in forbidden_classes:
-#             continue
-#         window = wlist[wid][0][:char_limit]
-#         printf(
-#             "%{A1:"
-#             + on_click
-#             + " raise_or_minimize "
-#             + wid
-#             + ":}%{A2:"
-#             + on_click
-#             + " close "
-#             + wid
-#             + ":}%{A3:"
-#             + on_click
-#             + " slop_resize "
-#             + wid
-#             + ":}%{A4:"
-#             + on_click
-#             + " increment_size "
-#             + wid
-#             + ":}%{A5:"
-#             + on_click
-#             + " decrement_size "
-#             + wid
-#             + ":}"
-#         )
-#         if wid == focused:
-#             printf(active_left + " " + window + " " + active_right)
-#         else:
-#             printf(inactive_left + " " + window + " " + inactive_right)
-#         printf("%{A}%{A}%{A}%{A}%{A}")
+
+def get_active_wid():
+    return os.popen("bspc query -N -n .focused").read()[:-1]
 
 
 def ensure_len(ID, length=10):
@@ -290,12 +207,13 @@ def wid_to_name(wid):
                     .read()
                     .split('"')[1]
                 )
-            if iconize:
-                name = to_icon(name)
-            try:
-                out[name].append(id)
-            except:
-                out[name] = [id]
+            if name.lower() not in forbidden_classes:
+                if iconize:
+                    name = to_icon(name)
+                try:
+                    out[name].append(id)
+                except:
+                    out[name] = [id]
         return out
 
 
@@ -325,19 +243,45 @@ def generate(workspaces, focused_win="", focused_desk="", order=[]):
         if len(workspaces[workspace_id][0]) == 0:
             out += separator + wps_active_right
         else:
-            out += ":" + separator
+            out += ":"
             windows = wid_to_name(workspaces[workspace_id][0])
             for i, win_class in enumerate(windows.keys()):
                 if i == max_windows:
                     break
-                if i != 0:
-                    out += separator
+                wid = " ".join(windows[win_class])
+                if focused_win in windows[win_class]:
+                    out += active_left
+                out += (
+                    "%{A1:"
+                    + on_click
+                    + " raise_or_minimize "
+                    + wid
+                    + ":}%{A2:"
+                    + on_click
+                    + " close "
+                    + wid
+                    + ":}%{A3:"
+                    + on_click
+                    + " slop_resize "
+                    + wid
+                    + ":}%{A4:"
+                    + on_click
+                    + " increment_size "
+                    + wid
+                    + ":}%{A5:"
+                    + on_click
+                    + " decrement_size "
+                    + wid
+                    + ":}"
+                )
+                out += separator
                 out += win_class.upper()
                 out += (
                     separator
                     if len(windows[win_class]) <= 1
                     else str(len(windows[win_class])).translate(superscript)
                 )
+                out += active_right + "%{A}%{A}%{A}%{A}%{A}"
             out += wps_active_right
             if len(windows.keys()) > max_windows:
                 out += f"+{len(windows.keys())-max_windows}"
@@ -482,41 +426,43 @@ def main():
                                     :-1
                                 ]  # ID of the currently focused workspace
 
-            try:
-                printf(
-                    generate(
-                        workspaces,
-                        focused_win=focused,
-                        focused_desk=focused_workspace,
-                        order=workspace_order,
+                try:
+                    printf(
+                        generate(
+                            workspaces,
+                            focused_win=focused,
+                            focused_desk=focused_workspace,
+                            order=workspace_order,
+                        )
                     )
-                )
-                printf("\n")
-                sys.stdout.flush()
-            except:
-                workspace_order = []
-                workspaces = {}  # workspace ID and name pairs
-                for workspace in [
-                    workspace[:-1]
-                    for workspace in os.popen(
-                        f"bspc query -D -m '{mon_id}'"
-                    ).readlines()
-                ]:
-                    workspace_order.append(workspace)
-                    workspaces[workspace] = (
-                        [
-                            window[:-1]
-                            for window in os.popen(
-                                f"bspc query -N -d {workspace} -n .window"
-                            ).readlines()
-                        ],
-                        os.popen(f"bspc query -D -d {workspace} --names").read()[:-1],
-                    )
-                    focused_workspace = os.popen(
-                        f"bspc query -D -m {mon_id} -d .focused"
-                    ).read()[
-                        :-1
-                    ]  # ID of the currently focused workspace
+                    printf("\n")
+                    sys.stdout.flush()
+                except:
+                    workspace_order = []
+                    workspaces = {}  # workspace ID and name pairs
+                    for workspace in [
+                        workspace[:-1]
+                        for workspace in os.popen(
+                            f"bspc query -D -m '{mon_id}'"
+                        ).readlines()
+                    ]:
+                        workspace_order.append(workspace)
+                        workspaces[workspace] = (
+                            [
+                                window[:-1]
+                                for window in os.popen(
+                                    f"bspc query -N -d {workspace} -n .window"
+                                ).readlines()
+                            ],
+                            os.popen(f"bspc query -D -d {workspace} --names").read()[
+                                :-1
+                            ],
+                        )
+                        focused_workspace = os.popen(
+                            f"bspc query -D -m {mon_id} -d .focused"
+                        ).read()[
+                            :-1
+                        ]  # ID of the currently focused workspace
 
             # break
     else:
