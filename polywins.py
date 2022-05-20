@@ -23,9 +23,10 @@ show = "window_class"  # options: window_title, window_class, window_classname
 forbidden_classes = "Polybar Conky Gmrun Pavucontrol".upper().split(" ")
 hide_unpopulated_desktops = False
 iconize = True
+hide_name = True  # Controls whether to hide window names when an icon is present
 
 char_limit = 10
-max_windows = 5
+max_windows = 10
 add_spaces = "true"
 resize_increment = 16
 resize_offset = resize_increment / 2
@@ -69,6 +70,76 @@ printf = sys.stdout.write
 
 superscript = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
 
+
+class_icons = {
+    "alacritty": fa.icons["terminal"],
+    "atom": fa.icons["code"],
+    "vscode": fa.icons["code"],
+    "neovim": fa.icons["code"],
+    "banshee": fa.icons["play"],
+    "blender": fa.icons["cube"],
+    "chromium": fa.icons["chrome"],
+    "cura": fa.icons["cube"],
+    "darktable": fa.icons["image"],
+    "discord": fa.icons["comment"],
+    "eclipse": fa.icons["code"],
+    "emacs": fa.icons["code"],
+    "eog": fa.icons["image"],
+    "evince": fa.icons["file-pdf"],
+    "evolution": fa.icons["envelope"],
+    "feh": fa.icons["image"],
+    "file-roller": fa.icons["compress"],
+    "filezilla": fa.icons["server"],
+    "firefox": fa.icons["firefox"],
+    "firefox-esr": fa.icons["firefox"],
+    "firefoxdev": fa.icons["firefox"],
+    "navigator": fa.icons["firefox"],
+    "gimp": fa.icons["image"],
+    "gimp-2.8": fa.icons["image"],
+    "gnome-control-center": fa.icons["toggle-on"],
+    "gnome-terminal-server": fa.icons["terminal"],
+    "google-chrome": fa.icons["chrome"],
+    "prusa-slicer": fa.icons["cube"],
+    "gpick": fa.icons["eye-dropper"],
+    "imv": fa.icons["image"],
+    "insomnia": fa.icons["globe"],
+    "java": fa.icons["code"],
+    "jetbrains-idea": fa.icons["code"],
+    "jetbrains-studio": fa.icons["code"],
+    "keepassxc": fa.icons["key"],
+    "keybase": fa.icons["key"],
+    "kicad": fa.icons["microchip"],
+    "kitty": fa.icons["terminal"],
+    "libreoffice": fa.icons["file-alt"],
+    "lua5.1": fa.icons["moon"],
+    "mpv": fa.icons["tv"],
+    "mupdf": fa.icons["file-pdf"],
+    "mysql-workbench-bin": fa.icons["database"],
+    "nautilus": fa.icons["copy"],
+    "nemo": fa.icons["copy"],
+    "openscad": fa.icons["cube"],
+    "pavucontrol": fa.icons["volume-up"],
+    "postman": fa.icons["space-shuttle"],
+    "rhythmbox": fa.icons["play"],
+    "robo3t": fa.icons["database"],
+    "signal": fa.icons["comment"],
+    "slack": fa.icons["slack"],
+    "slic3r.pl": fa.icons["cube"],
+    "spotify": fa.icons["music"],  # could also use the 'spotify' icon
+    "steam": fa.icons["steam"],
+    "subl": fa.icons["file-alt"],
+    "subl3": fa.icons["file-alt"],
+    "sublime_text": fa.icons["file-alt"],
+    "thunar": fa.icons["copy"],
+    "thunderbird": fa.icons["envelope"],
+    "totem": fa.icons["play"],
+    "urxvt": fa.icons["terminal"],
+    "xfce4-terminal": fa.icons["terminal"],
+    "xournal": fa.icons["file-alt"],
+    "yelp": fa.icons["code"],
+    "zenity": fa.icons["window-maximize"],
+    "zoom": fa.icons["comment"],
+}
 
 #         if workspace == workspaces[active_workspace]:
 #             printf(wps_active_left + " " + workspace)
@@ -152,79 +223,6 @@ superscript = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
 #         else:
 #             printf(inactive_left + " " + window + " " + inactive_right)
 #         printf("%{A}%{A}%{A}%{A}%{A}")
-#     if len(window_workspace_pairs[workspace]) > max_windows:
-#         printf(f"+{len(window_workspace_pairs[workspace])-max_windows}")
-# except KeyError:
-# pass
-
-
-class_icons = {
-    "alacritty": fa.icons["terminal"],
-    "atom": fa.icons["code"],
-    "banshee": fa.icons["play"],
-    "blender": fa.icons["cube"],
-    "chromium": fa.icons["chrome"],
-    "cura": fa.icons["cube"],
-    "darktable": fa.icons["image"],
-    "discord": fa.icons["comment"],
-    "eclipse": fa.icons["code"],
-    "emacs": fa.icons["code"],
-    "eog": fa.icons["image"],
-    "evince": fa.icons["file-pdf"],
-    "evolution": fa.icons["envelope"],
-    "feh": fa.icons["image"],
-    "file-roller": fa.icons["compress"],
-    "filezilla": fa.icons["server"],
-    "firefox": fa.icons["firefox"],
-    "firefox-esr": fa.icons["firefox"],
-    "firefoxdev": fa.icons["firefox"],
-    "navigator": fa.icons["firefox"],
-    "gimp": fa.icons["image"],
-    "gimp-2.8": fa.icons["image"],
-    "gnome-control-center": fa.icons["toggle-on"],
-    "gnome-terminal-server": fa.icons["terminal"],
-    "google-chrome": fa.icons["chrome"],
-    "prusa-slicer": fa.icons["cube"],
-    "gpick": fa.icons["eye-dropper"],
-    "imv": fa.icons["image"],
-    "insomnia": fa.icons["globe"],
-    "java": fa.icons["code"],
-    "jetbrains-idea": fa.icons["code"],
-    "jetbrains-studio": fa.icons["code"],
-    "keepassxc": fa.icons["key"],
-    "keybase": fa.icons["key"],
-    "kicad": fa.icons["microchip"],
-    "kitty": fa.icons["terminal"],
-    "libreoffice": fa.icons["file-alt"],
-    "lua5.1": fa.icons["moon"],
-    "mpv": fa.icons["tv"],
-    "mupdf": fa.icons["file-pdf"],
-    "mysql-workbench-bin": fa.icons["database"],
-    "nautilus": fa.icons["copy"],
-    "nemo": fa.icons["copy"],
-    "openscad": fa.icons["cube"],
-    "pavucontrol": fa.icons["volume-up"],
-    "postman": fa.icons["space-shuttle"],
-    "rhythmbox": fa.icons["play"],
-    "robo3t": fa.icons["database"],
-    "signal": fa.icons["comment"],
-    "slack": fa.icons["slack"],
-    "slic3r.pl": fa.icons["cube"],
-    "spotify": fa.icons["music"],  # could also use the 'spotify' icon
-    "steam": fa.icons["steam"],
-    "subl": fa.icons["file-alt"],
-    "subl3": fa.icons["file-alt"],
-    "sublime_text": fa.icons["file-alt"],
-    "thunar": fa.icons["copy"],
-    "thunderbird": fa.icons["envelope"],
-    "totem": fa.icons["play"],
-    "urxvt": fa.icons["terminal"],
-    "xfce4-terminal": fa.icons["terminal"],
-    "xournal": fa.icons["file-alt"],
-    "yelp": fa.icons["code"],
-    "zenity": fa.icons["window-maximize"],
-    "zoom": fa.icons["comment"],
-}
 
 
 def ensure_len(ID, length=10):
@@ -233,32 +231,38 @@ def ensure_len(ID, length=10):
     return ID
 
 
-def to_icon(name):
-    try:
-        return class_icons[name.lower()] + " " + name
-    except:
-        return name
+if hide_name:
+
+    def to_icon(name):
+        try:
+            return class_icons[name.lower()] + " "
+        except:
+            return name[:char_limit]
+
+else:
+
+    def to_icon(name):
+        try:
+            return class_icons[name.lower()] + " " + name[:char_limit]
+        except:
+            return name[:char_limit]
 
 
 def wid_to_name(wid):
     if not isinstance(wid, list):
         if show == "window_class":
-            out = (
-                os.popen(f"xprop -id {wid} WM_CLASS 2> /dev/null")
-                .read()
-                .split('"')[:char_limit]
-            )
+            out = os.popen(f"xprop -id {wid} WM_CLASS 2> /dev/null").read().split('"')
         if show == "window_classname":
             out = (
                 os.popen(f"xprop -id {wid} WM_CLASS 2> /dev/null")
                 .read()
-                .split('"')[:-1][-1][:char_limit]
+                .split('"')[:-1][-1]
             )
         if show == "window_title":
             out = (
                 os.popen(f"xprop -id {wid} _NET_WM_NAME 2> /dev/null")
                 .read()
-                .split('"')[1][:char_limit]
+                .split('"')[1]
             )
         if name_style == "upper":
             out = out.upper()
@@ -272,19 +276,19 @@ def wid_to_name(wid):
                 name = (
                     os.popen(f"xprop -id {id} WM_CLASS 2> /dev/null")
                     .read()
-                    .split('"')[1][:char_limit]
+                    .split('"')[1]
                 )
             if show == "window_classname":
                 name = (
                     os.popen(f"xprop -id {id} WM_CLASS 2> /dev/null")
                     .read()
-                    .split('"')[-2][:char_limit]
+                    .split('"')[-2]
                 )
             if show == "window_title":
                 name = (
                     os.popen(f"xprop -id {id} _NET_WM_NAME 2> /dev/null")
                     .read()
-                    .split('"')[1][:char_limit]
+                    .split('"')[1]
                 )
             if iconize:
                 name = to_icon(name)
@@ -298,10 +302,23 @@ def wid_to_name(wid):
 def generate(workspaces, focused_win="", focused_desk="", order=[]):
     out = ""
     for workspace_id in order:
-        if len(workspaces[workspace_id][0]) == hide_unpopulated_desktops - 1:
+        if len(workspaces[workspace_id][0]) < hide_unpopulated_desktops:
             continue
         out += (
-            separator + workspaces[workspace_id][1]
+            "%{A1:"
+            + on_click
+            + " switch_workspace "
+            + workspace_id
+            + ":}"
+            + "%{A2:"
+            + on_click
+            + " swap_workspace "
+            + workspace_id
+            + ":}"
+            + wps_inactive_left
+            + separator
+            + workspaces[workspace_id][1]
+            + "%{A}%{A}"
             if workspace_id != focused_desk
             else wps_active_left + separator + workspaces[workspace_id][1]
         )
