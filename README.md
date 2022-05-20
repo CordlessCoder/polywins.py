@@ -1,6 +1,6 @@
 # polywins.py
 A polywins inspired workspace AND window lister, written in Python. Heavy WIP.
-BSPWM only. Requires xprop amd the fontawesome python module.
+BSPWM only. Requires xprop, wmctrl, xdo and slop.
 
 <img align="right" src="https://raw.githubusercontent.com/CordlessCoder/polywins.py/26d6fe50efcc901577540346eef61d5a44f8f7aa/screenshot.png">
 
@@ -9,17 +9,6 @@ BSPWM only. Requires xprop amd the fontawesome python module.
 Arch Linux:
 ```bash
 yay -S xorg-xprop xdo wmctrl slop
-```
-
-#### Installing the python fontawesome module:
-
-Using the AUR:
-```bash
-yay -S python-fontawesome
-```
-Using pip:
-```
-pip install fontawesome
 ```
 
 ## Adding to polybar
