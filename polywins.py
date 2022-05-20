@@ -4,7 +4,7 @@ import os
 
 # import timeit
 
-# POLYWORKS
+# BSPWINS.py
 
 # SETTINGS
 
@@ -62,39 +62,6 @@ monitor = sys.argv[1]
 
 
 printf = sys.stdout.write
-
-
-def get_active_wid():
-    wid = os.popen("xprop -root _NET_ACTIVE_WINDOW").read().split("#")[1].strip()
-    while len(wid) < 9:
-        wid = "0x0" + wid[2:]
-    return wid
-
-
-def get_active_workspace():
-    workspaces = os.popen("wmctrl -d")
-    while True:
-        line = workspaces.readline()
-        if line[3] == "*":
-            return " ".join(line[line.rfind("WA:") :].split(" ")[1:])[:-1]
-
-
-def get_workspaces(monitor=None):
-    if monitor is None:
-        wml = os.popen("wmctrl -d").readlines()
-        workspaces = [
-            " ".join(line[line.rfind("WA:") :].split(" ")[2:])[1:-1] for line in wml
-        ]
-        active_workspace = 0
-        for line in wml:
-            if line[3] == "*":
-                active_workspace = int(line.split(" ")[0])
-                break
-        return workspaces, active_workspace
-    else:
-        workspaces = os.popen(f"bspc query -m {monitor} -D --names").readlines()
-        workspaces = [workspace[:-1] for workspace in workspaces]
-        return workspaces
 
 
 def regen(windows, focused):
@@ -198,28 +165,122 @@ def regen(windows, focused):
     # pass
 
 
+def ensure_len(ID, length=10):
+    while len(ID) < length - 1:
+        ID = "0x0" + ID[2:]
+    return ID
+
+
+def wid_to_name(wid):
+    if show == "class":
+        return os.popen(f"xprop -id {wid} WM_CLASS").read().split('"')[:char_limit]
+    if show == "window_classname":
+        return (
+            os.popen(f"xprop -id {wid} WM_CLASS")
+            .read()
+            .split('"')[:-1][-1][:char_limit]
+        )
+    if show == "window_title":
+        return (
+            os.popen(f"xprop -id {wid} _NET_WM_NAME").read().split('"')[1][:char_limit]
+        )
+
+
 def main():
     if len(sys.argv) <= 2:
-        command = os.popen("xprop -root -spy _NET_CLIENT_LIST _NET_ACTIVE_WINDOW")
-        windows = ()
-        focused = ""
+        command = os.popen(
+            "bspc subscribe desktop_focus desktop_add desktop_rename desktop_remove desktop_swap node_add node_remove node_swap node_transfer node_focus"
+        )
+        mon_id = os.popen(f"bspc query -M -m '{monitor}'").read()[:-1]
+        workspaces = {}  # workspace ID and name pairs
+        for workspace in [
+            workspace[:-1]
+            for workspace in os.popen(f"bspc query -D -m '{mon_id}'").readlines()
+        ]:
+            workspaces[workspace] = (
+                [
+                    window[:-1]
+                    for window in os.popen(f"bspc query -N -d {workspace}").readlines()
+                ],
+                os.popen(f"bspc query -D -d {workspace} --names").read()[:-1],
+            )
+
+        focused_workspace = os.popen(f"bspc query -D -m {mon_id} -d .focused").read()[
+            :-1
+        ]  # ID of the currently focused workspace
+        focused = os.popen(f"bspc query -N -m {mon_id} -n .focused").read()[
+            :-1
+        ]  # ID of the currently focused window
         while True:
-            update = command.readline().replace("\n", "")
-            if "not found." in update:
-                continue
-            if update.startswith("_NET_CLIENT_LIST"):
-                windows = ()
-                windowlist = update.split("#")[-1][1:].split(", ")
-                for window in windowlist:
-                    while len(window) < 9:
-                        window = "0x0" + window[2:]
-                    windows = (*windows, window)
-            elif update.startswith("_NET_ACTIVE_WINDOW"):
-                focused = update.split("#")[1].strip()
-            else:
-                continue
-            regen(windows, focused)
-            printf("\n")
+            update = command.readline()[:-1]
+            if mon_id in update:
+                if "node" in update:
+                    update = update[5:].split(" ")
+                    if update[0] == "focus":
+                        focused = update[-1]
+                    elif update[0] == "add":
+                        workspaces[update[2]][0].append(update[4])
+                    elif update[0] == "remove":
+                        workspaces[update[2]][0].remove(update[3])
+                    elif update[0] == "swap":
+                        if update[1] == mon_id:
+                            workspaces[update[2]][0].remove(update[3])
+                            workspaces[update[2]][0].append(update[6])
+                        if update[4] == mon_id:
+                            workspaces[update[5]][0].remove(update[6])
+                            workspaces[update[5]][0].append(update[3])
+                    else:
+                        if update[1] == mon_id:
+                            workspaces[update[2]][0].remove(update[3])
+                        if update[4] == mon_id:
+                            workspaces[update[5]][0].append(update[3])
+                else:
+                    update = update[8:].split(" ")
+                    if update[0] == "focus":
+                        focused_workspace = update[-1]
+                    elif update[0] == "add":
+                        workspaces[update[2]] = ([], update[-1])
+                    elif update[0] == "rename":
+                        workspaces[update[2]] = (
+                            [
+                                window[:-1]
+                                for window in os.popen(
+                                    f"bspc query -N -d {update[2]}"
+                                ).readlines()
+                            ],
+                            update[-1],
+                        )
+                    elif update[0] == "remove":
+                        workspaces.pop(update[-1])
+                    else:
+                        if update[1] == mon_id and update[3] == mon_id:
+                            workspaces[update[2]], workspaces[update[4]] = (
+                                workspaces[update[4]],
+                                workspaces[update[2]],
+                            )
+                        else:
+                            workspaces = {}  # workspace ID and name pairs
+                            for workspace in [
+                                workspace[:-1]
+                                for workspace in os.popen(
+                                    f"bspc query -D -m '{mon_id}'"
+                                ).readlines()
+                            ]:
+                                workspaces[workspace] = (
+                                    [
+                                        window[:-1]
+                                        for window in os.popen(
+                                            f"bspc query -N -d {workspace}"
+                                        ).readlines()
+                                    ],
+                                    os.popen(
+                                        f"bspc query -D -d {workspace} --names"
+                                    ).read()[:-1],
+                                )
+
+            for name in workspaces.keys():
+                print(workspaces[name])
+            print(focused_workspace)
             sys.stdout.flush()
             # break
     else:
