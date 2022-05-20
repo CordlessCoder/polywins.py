@@ -4,7 +4,14 @@ BSPWM only. Requires xprop amd the fontawesome python module.
 
 <img align="right" src="https://raw.githubusercontent.com/CordlessCoder/polywins.py/26d6fe50efcc901577540346eef61d5a44f8f7aa/screenshot.png">
 
-## Installing python-fontawesome
+## Installing the required packages
+
+Arch Linux:
+```bash
+yay -S xorg-xprop xdo wmctrl slop
+```
+
+#### Installing the python fontawesome module:
 
 Using the AUR:
 ```bash
