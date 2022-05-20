@@ -71,6 +71,8 @@ class_icons = {
     "atom": "",
     "vscode": "",
     "neovim": "",
+    "nvim": "",
+    "nvim-qt": "",
     "banshee": "",
     "blender": "",
     "chromium": "",
