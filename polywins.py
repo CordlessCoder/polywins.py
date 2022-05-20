@@ -16,7 +16,7 @@ inactive_text_color = "#C0CAF5"
 inactive_bg = ""
 inactive_underline = "#C0CAF5"
 
-separator = ""
+separator = " "
 show = "window_classname"  # options: window_title, window_class, window_classname
 forbidden_classes = "Polybar Conky Gmrun Pavucontrol".upper().split(" ")
 show_unpopulated_desktops = False
@@ -35,7 +35,7 @@ active_left = "%{F" + active_text_color + "}"
 active_right = "%{F-}"
 inactive_left = "%{F" + inactive_text_color + "}"
 inactive_right = "%{F-}"
-separator = "%{F" + inactive_text_color + "}" + separator + "%{F-}"
+# separator = "%{F" + inactive_text_color + "}" + separator + "%{F-}"
 
 wps_active_left = "%{F" + inactive_text_color + "}%{+u}%{u" + inactive_underline + "}"
 
@@ -172,22 +172,50 @@ def ensure_len(ID, length=10):
 
 
 def wid_to_name(wid):
-    if show == "class":
-        return os.popen(f"xprop -id {wid} WM_CLASS").read().split('"')[:char_limit]
-    if show == "window_classname":
-        return (
-            os.popen(f"xprop -id {wid} WM_CLASS")
-            .read()
-            .split('"')[:-1][-1][:char_limit]
-        )
-    if show == "window_title":
-        return (
-            os.popen(f"xprop -id {wid} _NET_WM_NAME").read().split('"')[1][:char_limit]
-        )
+    if wid is not list:
+        if show == "class":
+            return os.popen(f"xprop -id {wid} WM_CLASS").read().split('"')[:char_limit]
+        if show == "window_classname":
+            return (
+                os.popen(f"xprop -id {wid} WM_CLASS")
+                .read()
+                .split('"')[:-1][-1][:char_limit]
+            )
+        if show == "window_title":
+            return (
+                os.popen(f"xprop -id {wid} _NET_WM_NAME")
+                .read()
+                .split('"')[1][:char_limit]
+            )
+    else:
+        for id in wid:
+            if show == "class":
+                return (
+                    os.popen(f"xprop -id {wid} WM_CLASS").read().split('"')[:char_limit]
+                )
+            if show == "window_classname":
+                return (
+                    os.popen(f"xprop -id {wid} WM_CLASS")
+                    .read()
+                    .split('"')[:-1][-1][:char_limit]
+                )
+            if show == "window_title":
+                return (
+                    os.popen(f"xprop -id {wid} _NET_WM_NAME")
+                    .read()
+                    .split('"')[1][:char_limit]
+                )
 
 
-def generate(workspaces):
+def generate(workspaces, focused_win="", focused_desk=""):
     out = ""
+    for workspace_id in workspaces.keys():
+        out += separator
+        out += workspaces[workspace_id][1]
+        if len(workspaces[workspace_id][0]) == 0:
+            out += separator
+        else:
+            out += ":" + " ".join(wid_to_name(workspaces[workspace_id][0]))
     return out
 
 
@@ -283,7 +311,12 @@ def main():
                                     ).read()[:-1],
                                 )
 
-            print(wid_to_name())
+            printf(
+                generate(
+                    workspaces, focused_win=focused, focused_desk=focused_workspace
+                )
+            )
+            printf("\n")
             sys.stdout.flush()
             # break
     else:
