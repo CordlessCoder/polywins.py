@@ -371,7 +371,7 @@ def main():
 
         while True:
             update = command.readline()[:-1]
-            if mon_id in update or "remove" in update:
+            if mon_id in update or "node_remove" in update:
                 if "node" in update:
                     update = update[5:].split(" ")
                     if update[0] == "focus":
@@ -383,7 +383,7 @@ def main():
                         try:
                             workspaces[update[2]][0].remove(update[3])
                         except KeyError:
-                            continue
+                            pass
                     elif update[0] == "swap":
                         if update[1] == mon_id:
                             workspaces[update[2]][0].remove(update[3])
@@ -413,10 +413,7 @@ def main():
                             update[-1],
                         )
                     elif update[0] == "remove":
-                        try:
-                            workspaces.pop(update[-1])
-                        except KeyError:
-                            pass
+                        workspaces.pop(update[-1], None)
                     else:
                         if update[1] == mon_id and update[3] == mon_id:
                             index = workspace_order.index(update[4])
@@ -488,6 +485,11 @@ def main():
                         ).read()[
                             :-1
                         ]  # ID of the currently focused workspace
+                        focused = os.popen(
+                            f"bspc query -N -m {mon_id} -n .focused"
+                        ).read()[
+                            :-1
+                        ]  # ID of the currently focused window
     else:
         exec(sys.argv[2] + "(" + "'" + " ".join(sys.argv[3:]) + "')")
 
@@ -558,6 +560,4 @@ def swap_workspace(workspace):
 
 
 if __name__ == "__main__":
-    # duration = timeit.Timer(main).timeit(number=20)
-    # print(duration / 20)
     main()
