@@ -368,7 +368,11 @@ def main():
 
         while True:
             update = command.readline()[:-1]
-            if mon_id in update or "node_remove" in update:
+            if (
+                mon_id in update
+                or update.startswith("node_remove")
+                or update.startswith("node_focus")
+            ):
                 if update.startswith("node"):
                     update = update[5:].split(" ")
                     if update[0] == "focus":
