@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import sys
 import os
-import time
 
 
 # POLYWINS.py
@@ -229,16 +228,18 @@ def wid_to_name(wid, cache={}):
         return out, cache
 
 
-def generate(workspaces, focused_win="", focused_desk="", order=[]):
+def generate(workspaces, focused_desk, order):
     global classcache
-    out = ""
+    focused = os.popen(f"bspc query -N -m {mon_id} -n .focused").read()[
+        :-1
+    ]  # ID of the currently focused window
     for workspace_id in order:
         if (
             len(workspaces[workspace_id][0]) < hide_unpopulated_desktops
             and workspace_id != focused_desk
         ):
             continue
-        out += (
+        printf(
             "%{A1:"
             + on_click
             + " switch_workspace "
@@ -257,17 +258,15 @@ def generate(workspaces, focused_win="", focused_desk="", order=[]):
             else wps_active_left + separator + workspaces[workspace_id][1]
         )
         if len(workspaces[workspace_id][0]) == 0:
-            out += separator + wps_active_right
+            printf(separator + wps_active_right)
         else:
-            out += ":"
+            printf(":")
             windows, classcache = wid_to_name(workspaces[workspace_id][0], classcache)
             for i, win_class in enumerate(windows.keys()):
                 if i == max_windows:
                     break
                 wid = " ".join(windows[win_class])
-                if focused_win in windows[win_class]:
-                    out += active_left
-                out += (
+                printf(
                     "%{A1:"
                     + on_click
                     + " focus "
@@ -290,18 +289,21 @@ def generate(workspaces, focused_win="", focused_desk="", order=[]):
                     + wid
                     + ":}"
                 )
-                out += separator
-                out += win_class.upper()
-                out += (
+                if focused in windows[win_class]:
+                    printf(active_left)
+                else:
+                    printf(inactive_left)
+                printf(separator)
+                printf(win_class.upper())
+                printf(
                     separator
                     if len(windows[win_class]) <= 1
                     else str(len(windows[win_class])).translate(superscript)
                 )
-                out += active_right + "%{A}%{A}%{A}%{A}%{A}"
-            out += wps_active_right
+                printf(active_right + "%{A}%{A}%{A}%{A}%{A}")
+            printf(wps_active_right)
             if len(windows.keys()) > max_windows:
-                out += f"+{len(windows.keys())-max_windows}"
-    return out
+                printf(f"+{len(windows.keys())-max_windows}")
 
 
 def main():
@@ -309,6 +311,7 @@ def main():
         command = os.popen(
             "bspc subscribe desktop_focus desktop_add desktop_rename desktop_remove desktop_swap node_add node_remove node_swap node_transfer node_focus"
         )
+        global mon_id
         mon_id = os.popen(f"bspc query -M -m '{monitor}'").read()[:-1]
         workspace_order = []
         workspaces = {}  # workspace ID and name pairs
@@ -330,23 +333,17 @@ def main():
         focused_workspace = os.popen(f"bspc query -D -m {mon_id} -d .focused").read()[
             :-1
         ]  # ID of the currently focused workspace
-        focused = os.popen(f"bspc query -N -m {mon_id} -n .focused").read()[
-            :-1
-        ]  # ID of the currently focused window
         global classcache
         classcache = {}
         try:
-            printf(
-                generate(
-                    workspaces,
-                    focused_win=focused,
-                    focused_desk=focused_workspace,
-                    order=workspace_order,
-                )
+            generate(
+                workspaces,
+                focused_workspace,
+                workspace_order,
             )
             printf("\n")
             sys.stdout.flush()
-        except OSError:
+        except:
             workspace_order = []
             workspaces = {}  # workspace ID and name pairs
             for workspace in [
@@ -372,18 +369,21 @@ def main():
         while True:
             update = command.readline()[:-1]
             if mon_id in update or "node_remove" in update:
-                if "node" in update:
+                if update.startswith("node"):
                     update = update[5:].split(" ")
                     if update[0] == "focus":
-                        focused = update[-1]
+                        pass
                     elif update[0] == "add":
-                        workspaces[update[2]][0].append(update[4])
+                        try:
+                            workspaces[update[2]][0].append(update[4])
+                        except KeyError:
+                            pass
                     elif update[0] == "remove":
                         classcache.pop(update[3], None)
                         try:
                             workspaces[update[2]][0].remove(update[3])
                         except KeyError:
-                            pass
+                            continue
                     elif update[0] == "swap":
                         if update[1] == mon_id:
                             workspaces[update[2]][0].remove(update[3])
@@ -449,13 +449,10 @@ def main():
                                 ]  # ID of the currently focused workspace
 
                 try:
-                    printf(
-                        generate(
-                            workspaces,
-                            focused_win=focused,
-                            focused_desk=focused_workspace,
-                            order=workspace_order,
-                        )
+                    generate(
+                        workspaces,
+                        focused_workspace,
+                        workspace_order,
                     )
                     printf("\n")
                     sys.stdout.flush()
@@ -485,11 +482,9 @@ def main():
                         ).read()[
                             :-1
                         ]  # ID of the currently focused workspace
-                        focused = os.popen(
-                            f"bspc query -N -m {mon_id} -n .focused"
-                        ).read()[
-                            :-1
-                        ]  # ID of the currently focused window
+                        command = os.popen(
+                            "bspc subscribe desktop_focus desktop_add desktop_rename desktop_remove desktop_swap node_add node_remove node_swap node_transfer node_focus"
+                        )
     else:
         exec(sys.argv[2] + "(" + "'" + " ".join(sys.argv[3:]) + "')")
 
