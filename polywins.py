@@ -379,9 +379,9 @@ def main():
                     elif update[0] == "add":
                         workspaces[update[2]][0].append(update[4])
                     elif update[0] == "remove":
+                        classcache.pop(update[3], None)
                         try:
                             workspaces[update[2]][0].remove(update[3])
-                            classcache.pop(update[3])
                         except KeyError:
                             continue
                     elif update[0] == "swap":
