@@ -497,7 +497,7 @@ def slop_resize(window):
     window = sorted(window.split(" "))
     try:
         window = window[window.index(get_active_wid())]
-    except:
+    except ValueError:
         window = window[0]
     os.system(
         f"""bash -c 'bspc node "{window}" -g hidden=off &
@@ -515,7 +515,7 @@ def close(window):
     window = sorted(window.split(" "))
     try:
         window = window[window.index(get_active_wid())]
-    except:
+    except ValueError:
         window = window[0]
     os.system("xdo close " + window)
 
@@ -524,7 +524,7 @@ def focus(window):
     window = sorted(window.split(" "))
     try:
         window = window[(window.index(get_active_wid()) + 1) % len(window)]
-    except:
+    except ValueError:
         window = window[0]
     os.system("bspc node " + window + " -g hidden=off")
     os.system("wmctrl -ia " + window)
@@ -534,7 +534,7 @@ def increment_size(window):
     window = sorted(window.split(" "))
     try:
         window = window[window.index(get_active_wid())]
-    except:
+    except ValueError:
         window = window[0]
     os.system(f"xdo move -x -{resize_offset} -y -{resize_offset} {window}")
     os.system(f"xdo resize -w +{resize_increment} -h +{resize_increment} {window}")
@@ -544,8 +544,9 @@ def decrement_size(window):
     window = sorted(window.split(" "))
     try:
         window = window[window.index(get_active_wid())]
-    except:
+    except ValueError:
         window = window[0]
+    os.system(f"bspc node -t floating {window}")
     os.system(f"xdo move -x +{resize_offset} -y +{resize_offset} {window}")
     os.system(f"xdo resize -w -{resize_increment} -h -{resize_increment} {window}")
 
