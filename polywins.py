@@ -7,21 +7,14 @@ import os
 
 # SETTINGS
 
-active_text_color = "#EB6572"
-active_bg = "#24283B"
-active_underline = "#EB6572"
 
-inactive_text_color = "#C0CAF5"
-inactive_bg = ""
-inactive_underline = "#C0CAF5"
-
-name_style = "upper"  # options: upper, lower, None
+name_style = None  # options: upper, lower, None
 separator = " "
 show = "window_class"
-forbidden_classes = "Polybar Conky Gmrun Pavucontrol".lower().split(" ")
+forbidden_classes = "Polybar Conky Gmrun Pavucontrol".casefold().split(" ")
 hide_unpopulated_desktops = False
 iconize = True
-hide_name = False  # Controls whether to hide window names when an icon is present
+hide_name = True  # Controls whether to hide window names when an icon is present
 
 char_limit = 10
 max_windows = 10
@@ -30,115 +23,134 @@ resize_increment = 16
 resize_offset = resize_increment / 2
 
 
-# WINDOW LIST SETUP
+if len(sys.argv) <= 2:
+    try:
+        with open(os.path.expanduser("~/.cache/wal/colors")) as colors:
+            colors = tuple(map(lambda x: x[:-1], colors.readlines()))
+        active_text_color = colors[1]
+        active_bg = colors[8]
+        active_underline = colors[1]
+        inactive_text_color = colors[7]
+        inactive_bg = ""
+        inactive_underline = colors[7]
 
+    except (OSError, IndexError, TypeError):
+        active_text_color = "#EB6572"
+        active_bg = "#24283B"
+        active_underline = "#EB6572"
+        inactive_text_color = "#C0CAF5"
+        inactive_bg = ""
+        inactive_underline = "#C0CAF5"
 
-active_left = "%{F" + active_text_color + "}"
-active_right = "%{F-}"
-inactive_left = "%{F" + inactive_text_color + "}"
-inactive_right = "%{F-}"
-# separator = "%{F" + inactive_text_color + "}" + separator + "%{F-}"
+    # WINDOW LIST SETUP
 
-wps_active_left = "%{F" + inactive_text_color + "}%{+u}%{u" + inactive_underline + "}"
+    active_left = "%{F" + active_text_color + "}"
+    active_right = "%{F-}"
+    inactive_left = "%{F" + inactive_text_color + "}"
+    inactive_right = "%{F-}"
+    # separator = "%{F" + inactive_text_color + "}" + separator + "%{F-}"
 
-wps_active_right = "%{-u}%{u}%{F-}"
-wps_inactive_left = "%{F" + inactive_text_color + "}"
-wps_inactive_right = "%{F-}"
+    wps_active_left = "%{F" + inactive_text_color + "}%{+u}%{u" + inactive_underline + "}"
 
-if active_underline is not None:
-    active_left = active_left + "%{+u}%{u" + active_underline + "}"
-    active_right = "%{-u}" + active_right
+    wps_active_right = "%{-u}%{u}%{F-}"
+    wps_inactive_left = "%{F" + inactive_text_color + "}"
+    wps_inactive_right = "%{F-}"
 
+    if active_underline is not None:
+        active_left = active_left + "%{+u}%{u" + active_underline + "}"
+        active_right = "%{-u}" + active_right
 
-if inactive_underline is not None:
-    inactive_left += "%{+u}%{u" + inactive_underline + "}"
-    inactive_right = "%{-u}" + inactive_right
+    if inactive_underline is not None:
+        inactive_left += "%{+u}%{u" + inactive_underline + "}"
+        inactive_right = "%{-u}" + inactive_right
 
+    on_click = " ".join(sys.argv[:2])
+    monitor = sys.argv[1]
 
-on_click = " ".join(sys.argv[:2])
-monitor = sys.argv[1]
+    printf = sys.stdout.write
 
+    superscript = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
 
-printf = sys.stdout.write
-
-
-superscript = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
-
-
-class_icons = {
-    "alacritty": "",
-    "atom": "",
-    "vscode": "",
-    "neovim": "",
-    "nvim": "",
-    "nvim-qt": "",
-    "banshee": "",
-    "blender": "",
-    "chromium": "",
-    "google-chrome": "",
-    "cura": "",
-    "darktable": "",
-    "discord": "ﭮ",
-    "eclipse": "",
-    "emacs": "",
-    "eog": "",
-    "evince": "",
-    "evolution": "",
-    "feh": "",
-    "file-roller": "ﭕ",
-    "filezilla": "",
-    "firefox": "",
-    "firefox-esr": "",
-    "firefoxdev": "",
-    "navigator": "",
-    "gimp": "",
-    "gimp-2.8": "",
-    "gnome-control-center": "",
-    "gnome-terminal-server": "",
-    "prusa-slicer": "",
-    "gpick": "",
-    "imv": "",
-    "insomnia": "",
-    "java": "",
-    "jetbrains-idea": "",
-    "jetbrains-studio": "",
-    "keepassxc": "",
-    "keybase": "",
-    "kicad": "",
-    "kitty": "",
-    "libreoffice": "",
-    "lua5.1": "",
-    "mpv": "",
-    "mupdf": "",
-    "mysql-workbench-bin": "",
-    "nautilus": "",
-    "nemo": "",
-    "openscad": "",
-    "pavucontrol": "",
-    "postman": "",
-    "rhythmbox": "蓼",
-    "robo3t": "",
-    "signal": "",
-    "slack": "",
-    "slic3r.pl": "",
-    "spotify": "",
-    "steam": "",
-    "subl": "",
-    "subl3": "",
-    "sublime_text": "",
-    "thunar": "",
-    "thunderbird": "",
-    "totem": "",
-    "urxvt": "",
-    "xfce4-terminal": "",
-    "xournal": "",
-    "yelp": "",
-    "zenity": "",
-    "zoom": "",
-    "telegram": "",
-    "kotatogram": "",
-    "lunarclient": "",
-}
+    class_icons = {
+        "alacritty": "",
+        "atom": "",
+        "vscode": "",
+        "code": "",
+        "code-oss": "",
+        "neovim": "",
+        "nvim": "",
+        "nvim-qt": "",
+        "neovide": "",
+        "banshee": "",
+        "blender": "",
+        "chromium": "",
+        "google-chrome": "",
+        "cura": "",
+        "darktable": "",
+        "discord": "ﭮ",
+        "eclipse": "",
+        "emacs": "",
+        "eog": "",
+        "evince": "",
+        "evolution": "",
+        "feh": "",
+        "file-roller": "ﭕ",
+        "filezilla": "",
+        "firefox": "",
+        "firefox-esr": "",
+        "firefoxdev": "",
+        "navigator": "",
+        "gimp": "",
+        "gimp-2.8": "",
+        "gnome-control-center": "",
+        "gnome-terminal-server": "",
+        "prusa-slicer": "",
+        "gpick": "",
+        "imv": "",
+        "insomnia": "",
+        "java": "",
+        "jetbrains-idea": "",
+        "jetbrains-studio": "",
+        "keepassxc": "",
+        "keybase": "",
+        "kicad": "",
+        "kitty": "",
+        "st-256color": "",
+        "st": "",
+        "libreoffice": "",
+        "lua5.1": "",
+        "mpv": "",
+        "mupdf": "",
+        "mysql-workbench-bin": "",
+        "nautilus": "",
+        "nemo": "",
+        "openscad": "",
+        "pavucontrol": "",
+        "postman": "",
+        "rhythmbox": "蓼",
+        "robo3t": "",
+        "signal": "",
+        "slack": "",
+        "slic3r.pl": "",
+        "spotify": "",
+        "steam": "",
+        "subl": "",
+        "subl3": "",
+        "sublime_text": "",
+        "thunar": "",
+        "thunderbird": "",
+        "totem": "",
+        "urxvt": "",
+        "xfce4-terminal": "",
+        "xournal": "",
+        "yelp": "",
+        "zenity": "",
+        "zoom": "",
+        "telegram": "",
+        "kotatogram": "",
+        "lunarclient": "",
+        "viber": "",
+    }
 
 
 def get_active_wid():
@@ -157,7 +169,10 @@ if hide_name:
         try:
             return class_icons[name.lower()] + " "
         except KeyError:
-            return name[:char_limit]
+            if not name.casefold().startswith("lunar client"):
+                return name[:char_limit]
+            else:
+                return ""
 
 else:
 
@@ -165,7 +180,10 @@ else:
         try:
             return class_icons[name.lower()] + " " + name[:char_limit]
         except KeyError:
-            return name[:char_limit]
+            if not name.casefold().startswith("lunar client"):
+                return name[:char_limit]
+            else:
+                return ""
 
 
 def wid_to_name(wid, cache={}):
@@ -173,17 +191,9 @@ def wid_to_name(wid, cache={}):
         if show == "window_class":
             out = os.popen(f"xprop -id {wid} WM_CLASS 2> /dev/null").read().split('"')
         if show == "window_classname":
-            out = (
-                os.popen(f"xprop -id {wid} WM_CLASS 2> /dev/null")
-                .read()
-                .split('"')[:-1][-1]
-            )
+            out = os.popen(f"xprop -id {wid} WM_CLASS 2> /dev/null").read().split('"')[:-1][-1]
         if show == "window_title":
-            out = (
-                os.popen(f"xprop -id {wid} _NET_WM_NAME 2> /dev/null")
-                .read()
-                .split('"')[1]
-            )
+            out = os.popen(f"xprop -id {wid} _NET_WM_NAME 2> /dev/null").read().split('"')[1]
         if name_style == "upper":
             out = out.upper()
         elif name_style == "lower":
@@ -195,29 +205,19 @@ def wid_to_name(wid, cache={}):
         for id in wid:
             if id not in cached:
                 if show == "window_class":
-                    name = (
-                        os.popen(f"xprop -id {id} WM_CLASS 2> /dev/null")
-                        .read()
-                        .split('"')[1]
-                    )
+                    name = os.popen(f"xprop -id {id} WM_CLASS 2> /dev/null").read().split('"')[1]
                 if show == "window_classname":
-                    name = (
-                        os.popen(f"xprop -id {id} WM_CLASS 2> /dev/null")
-                        .read()
-                        .split('"')[-2]
-                    )
+                    name = os.popen(f"xprop -id {id} WM_CLASS 2> /dev/null").read().split('"')[-2]
                 if show == "window_title":
                     name = (
-                        os.popen(f"xprop -id {id} _NET_WM_NAME 2> /dev/null")
-                        .read()
-                        .split('"')[1]
+                        os.popen(f"xprop -id {id} _NET_WM_NAME 2> /dev/null").read().split('"')[1]
                     )
                 if name.lower() not in forbidden_classes:
                     if iconize:
                         name = to_icon(name)
                     try:
                         out[name].append(id)
-                    except:
+                    except KeyError:
                         out[name] = [id]
                     cache[id] = name
             else:
@@ -316,16 +316,13 @@ def main():
         workspace_order = []
         workspaces = {}  # workspace ID and name pairs
         for workspace in [
-            workspace[:-1]
-            for workspace in os.popen(f"bspc query -D -m '{mon_id}'").readlines()
+            workspace[:-1] for workspace in os.popen(f"bspc query -D -m '{mon_id}'").readlines()
         ]:
             workspace_order.append(workspace)
             workspaces[workspace] = (
                 [
                     window[:-1]
-                    for window in os.popen(
-                        f"bspc query -N -d {workspace} -n .window"
-                    ).readlines()
+                    for window in os.popen(f"bspc query -N -d {workspace} -n .window").readlines()
                 ],
                 os.popen(f"bspc query -D -d {workspace} --names").read()[:-1],
             )
@@ -347,8 +344,7 @@ def main():
             workspace_order = []
             workspaces = {}  # workspace ID and name pairs
             for workspace in [
-                workspace[:-1]
-                for workspace in os.popen(f"bspc query -D -m '{mon_id}'").readlines()
+                workspace[:-1] for workspace in os.popen(f"bspc query -D -m '{mon_id}'").readlines()
             ]:
                 workspace_order.append(workspace)
                 workspaces[workspace] = (
@@ -360,9 +356,7 @@ def main():
                     ],
                     os.popen(f"bspc query -D -d {workspace} --names").read()[:-1],
                 )
-                focused_workspace = os.popen(
-                    f"bspc query -D -m {mon_id} -d .focused"
-                ).read()[
+                focused_workspace = os.popen(f"bspc query -D -m {mon_id} -d .focused").read()[
                     :-1
                 ]  # ID of the currently focused workspace
 
@@ -410,9 +404,7 @@ def main():
                         workspaces[update[2]] = (
                             [
                                 window[:-1]
-                                for window in os.popen(
-                                    f"bspc query -N -d {update[2]}"
-                                ).readlines()
+                                for window in os.popen(f"bspc query -N -d {update[2]}").readlines()
                             ],
                             update[-1],
                         )
@@ -421,9 +413,7 @@ def main():
                     else:
                         if update[1] == mon_id and update[3] == mon_id:
                             index = workspace_order.index(update[4])
-                            workspace_order[workspace_order.index(update[2])] = update[
-                                4
-                            ]
+                            workspace_order[workspace_order.index(update[2])] = update[4]
                             workspace_order[index] = update[2]
                         else:
                             workspace_order = []
@@ -442,9 +432,7 @@ def main():
                                             f"bspc query -N -d {workspace} -n .window"
                                         ).readlines()
                                     ],
-                                    os.popen(
-                                        f"bspc query -D -d {workspace} --names"
-                                    ).read()[:-1],
+                                    os.popen(f"bspc query -D -d {workspace} --names").read()[:-1],
                                 )
                                 focused_workspace = os.popen(
                                     f"bspc query -D -m {mon_id} -d .focused"
@@ -465,9 +453,7 @@ def main():
                     workspaces = {}  # workspace ID and name pairs
                     for workspace in [
                         workspace[:-1]
-                        for workspace in os.popen(
-                            f"bspc query -D -m '{mon_id}'"
-                        ).readlines()
+                        for workspace in os.popen(f"bspc query -D -m '{mon_id}'").readlines()
                     ]:
                         workspace_order.append(workspace)
                         workspaces[workspace] = (
@@ -477,9 +463,7 @@ def main():
                                     f"bspc query -N -d {workspace} -n .window"
                                 ).readlines()
                             ],
-                            os.popen(f"bspc query -D -d {workspace} --names").read()[
-                                :-1
-                            ],
+                            os.popen(f"bspc query -D -d {workspace} --names").read()[:-1],
                         )
                         focused_workspace = os.popen(
                             f"bspc query -D -m {mon_id} -d .focused"
@@ -524,10 +508,14 @@ def focus(window):
     window = sorted(window.split(" "))
     try:
         window = window[(window.index(get_active_wid()) + 1) % len(window)]
+        os.system("bspc node " + window + " -g hidden=off")
+        # os.system("bspc node -s " + window)
+        os.system("bspc node -f " + window)
     except ValueError:
         window = window[0]
-    os.system("bspc node " + window + " -g hidden=off")
-    os.system("wmctrl -ia " + window)
+        os.system("bspc node " + window + " -g hidden=off")
+        os.system("bspc node -f " + window)
+        os.system("wmctrl -ia " + window)
 
 
 def increment_size(window):
