@@ -2,7 +2,7 @@
 A polywins inspired workspace AND window lister, written in Python. Heavy WIP.
 BSPWM only. Requires xprop, wmctrl, xdo and slop.
 
-<img align="right" src="https://raw.githubusercontent.com/CordlessCoder/polywins.py/26d6fe50efcc901577540346eef61d5a44f8f7aa/screenshot.png">
+<img align="right" src="https://github.com/CordlessCoder/polywins.py/raw/main/screenshot.png">
 
 ## Installing the required packages
 
