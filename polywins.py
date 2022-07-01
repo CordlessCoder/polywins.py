@@ -25,7 +25,7 @@ resize_offset = resize_increment / 2
 use_pywal = True
 
 override_names = [
-    "",
+    "",
     "",
 ]  # Either a list containing the focused and unfocused versions of workspace name, or False
 
@@ -45,9 +45,9 @@ if len(sys.argv) <= 2:
 
     except (OSError, IndexError, TypeError):
         active_text_color = "#EB6572"
-        active_underline = "#EB6572"
+        active_underline = "#EB6572" if underline is not False else None
         inactive_text_color = "#C0CAF5"
-        inactive_underline = "#C0CAF5"
+        inactive_underline = "#C0CAF5" if underline is not False else None
 
     # WINDOW LIST SETUP
 
