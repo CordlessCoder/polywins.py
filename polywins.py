@@ -309,13 +309,9 @@ def generate(workspaces, focused_desk, order):
                     else (win_class.lower() if name_style == "lower" else win_class)
                 )
                 printf(
-                    (
-                        separator
-                        if len(windows[win_class]) <= 1
-                        else str(len(windows[win_class])).translate(superscript)
-                    )
-                    if i < (win_length - 1)
-                    else ""
+                    (separator if i < (win_length - 1) else "")
+                    if len(windows[win_class]) <= 1
+                    else str(len(windows[win_class])).translate(superscript)
                 )
                 printf(active_right + "%{A}%{A}%{A}%{A}%{A}")
             printf(wps_active_right)
