@@ -36,11 +36,11 @@ killall -q polybar
 # polybar-msg cmd quit
 
 if type "xrandr" >/dev/null; then
-	for m in $(polybar -m | cut -d':' -f1); do
-		MONITOR=$m polybar --reload main_bar &
-	done
+    for m in $(polybar -m | cut -d':' -f1); do
+        MONITOR=$m polybar --reload main_bar &
+    done
 else
-	polybar --reload main_bar &
+    polybar --reload main_bar &
 fi</pre>
 
 and in your main bar:
