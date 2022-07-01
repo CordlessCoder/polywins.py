@@ -21,10 +21,13 @@ max_windows = 10
 add_spaces = "true"
 resize_increment = 16
 resize_offset = resize_increment / 2
+use_pywal = True
 
 
 if len(sys.argv) <= 2:
     try:
+        if use_pywal is not True:
+            raise TypeError
         with open(os.path.expanduser("~/.cache/wal/colors")) as colors:
             colors = tuple(map(lambda x: x[:-1], colors.readlines()))
         active_text_color = colors[1]
