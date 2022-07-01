@@ -273,6 +273,7 @@ def generate(workspaces, focused_desk, order):
         else:
             printf(windowlist_prefix)
             windows, classcache = wid_to_name(workspaces[workspace_id][0], classcache)
+            win_length = len(windows.keys())
             for i, win_class in enumerate(windows.keys()):
                 if i == max_windows:
                     break
@@ -301,16 +302,20 @@ def generate(workspaces, focused_desk, order):
                     + ":}"
                 )
                 printf(active_left if focused in windows[win_class] else inactive_left)
-                printf(separator)
+                printf(separator if i == 0 else "")
                 printf(
                     win_class.upper()
                     if name_style == "upper"
                     else (win_class.lower() if name_style == "lower" else win_class)
                 )
                 printf(
-                    separator
-                    if len(windows[win_class]) <= 1
-                    else str(len(windows[win_class])).translate(superscript)
+                    (
+                        separator
+                        if len(windows[win_class]) <= 1
+                        else str(len(windows[win_class])).translate(superscript)
+                    )
+                    if i < (win_length - 1)
+                    else ""
                 )
                 printf(active_right + "%{A}%{A}%{A}%{A}%{A}")
             printf(wps_active_right)
