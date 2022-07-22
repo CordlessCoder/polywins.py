@@ -25,8 +25,9 @@ resize_offset = resize_increment / 2
 use_pywal = True
 
 override_names = [
-    "",
     "",
+    "",
+    "ﱣ"
 ]  # Either a list containing the focused and unfocused versions of workspace name, or False
 
 underline = False
@@ -181,7 +182,7 @@ if hide_name:
             if not name.casefold().startswith("lunar client"):
                 return name[:char_limit]
             else:
-                return ""
+                return " "
 
 else:
 
@@ -261,11 +262,11 @@ def generate(workspaces, focused_desk, order):
             + ":}"
             + wps_inactive_left
             + separator
-            + (workspaces[workspace_id][1] if override_names is False else override_names[1])
+            + (workspaces[workspace_id][1] if override_names is False else (override_names[1] if len(workspaces[workspace_id][0]) else override_names[0]))
             if workspace_id != focused_desk
             else wps_active_left
             + separator
-            + (workspaces[workspace_id][1] if override_names is False else override_names[0])
+            + (workspaces[workspace_id][1] if override_names is False else override_names[2])
         )
         if len(workspaces[workspace_id][0]) == 0:
             printf(separator + wps_active_right + "%{A}%{A}")
