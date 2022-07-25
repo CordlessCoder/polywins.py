@@ -10,7 +10,7 @@ import os
 
 name_style = None  # options: upper, lower, None
 separator = " "  # What to separate workspaces with
-windowlist_prefix = " "  # prefix before listing windows, default is ":"
+windowlist_prefix = " "  # prefix before listing windows, default is " "
 show = "window_class"
 forbidden_classes = "Polybar Conky Gmrun Pavucontrol".casefold().split(" ")
 hide_unpopulated_desktops = False
@@ -28,7 +28,7 @@ override_names = [
     "",
     "",
     "ﱣ"
-]  # Either a list containing the focused and unfocused versions of workspace name, or False
+]  # Either a list containing the focused, populated and unfocused versions of workspace name, or False
 
 underline = False
 highlight_active_wps = False
