@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import os
 
@@ -9,13 +9,23 @@ import os
 
 
 name_style = None  # options: upper, lower, None
-separator = " "  # What to separate workspaces with
+separator = " "  # What to separate all items with
+wps_separator = "" # What to separate workspaces with, default is ""
 windowlist_prefix = " "  # prefix before listing windows, default is " "
 show = "window_class"
-forbidden_classes = "Polybar Conky Gmrun Pavucontrol".casefold().split(" ")
+forbidden_classes = "toolkit Polybar Conky Gmrun Pavucontrol".casefold().split(" ")
 hide_unpopulated_desktops = False
 iconize = True
 hide_name = True  # Controls whether to hide window names when an icon is present
+
+# Custom color options, default is None
+active_text_color_opt = None
+active_underline_opt = None
+inactive_text_color_opt = None
+inactive_underline_opt = None
+wps_separator_color = "" # custom color for wps_separator, default is ""
+
+polybar_font_num = "-" # Polybar font number to use for the icons, default is "-" for default font
 
 char_limit = 10
 max_windows = 10
@@ -24,11 +34,7 @@ resize_increment = 16
 resize_offset = resize_increment / 2
 use_pywal = True
 
-override_names = [
-    "",
-    "",
-    "ﱣ"
-]  # Either a list containing the focused, populated and unfocused versions of workspace name, or False
+override_names = ["","","ﱣ"]  # Either a list containing the focused, populated and unfocused versions of workspace name, or False
 
 underline = False
 highlight_active_wps = False
@@ -39,16 +45,15 @@ if len(sys.argv) <= 2:
             raise TypeError
         with open(os.path.expanduser("~/.cache/wal/colors")) as colors:
             colors = tuple(map(lambda x: x[:-1], colors.readlines()))
-        active_text_color = colors[1]
-        active_underline = colors[1] if underline is not False else None
-        inactive_text_color = colors[7]
-        inactive_underline = colors[7] if underline is not False else None
-
+        active_text_color = colors[1] if active_text_color_opt is None else active_text_color_opt 
+        active_underline = (colors[1] if underline is not False else None) if active_underline_opt is None else active_underline_opt
+        inactive_text_color = colors[7] if inactive_text_color_opt is None else inactive_text_color_opt
+        inactive_underline = (colors[7] if underline is not False else None) if inactive_underline_opt is None else inactive_underline_opt
     except (OSError, IndexError, TypeError):
-        active_text_color = "#EB6572"
-        active_underline = "#EB6572" if underline is not False else None
-        inactive_text_color = "#C0CAF5"
-        inactive_underline = "#C0CAF5" if underline is not False else None
+        active_text_color = "#EB6572" if active_text_color_opt is None else active_text_color_opt 
+        active_underline = ("#EB6572" if underline is not False else None) if active_underline_opt is None else active_underline_opt
+        inactive_text_color = "#C0CAF5" if inactive_text_color_opt is None else inactive_text_color_opt
+        inactive_underline = ("#C0CAF5" if underline is not False else None) if inactive_underline_opt is None else inactive_underline_opt
 
     # WINDOW LIST SETUP
 
@@ -97,7 +102,8 @@ if len(sys.argv) <= 2:
         "google-chrome": "",
         "cura": "",
         "darktable": "",
-        "discord": "ﭮ",
+        "armcord": "󰙯",
+        "discord": "󰙯",
         "eclipse": "",
         "emacs": "",
         "eog": "",
@@ -106,10 +112,10 @@ if len(sys.argv) <= 2:
         "feh": "",
         "file-roller": "ﭕ",
         "filezilla": "",
-        "firefox": "",
-        "firefox-esr": "",
-        "firefoxdev": "",
-        "navigator": "",
+        "firefox": "󰈹",
+        "firefox-esr": "󰈹",
+        "firefoxdev": "󰈹",
+        "navigator": "󰈹",
         "gimp": "",
         "gimp-2.8": "",
         "gnome-control-center": "",
@@ -140,6 +146,8 @@ if len(sys.argv) <= 2:
         "rhythmbox": "蓼",
         "robo3t": "",
         "signal": "",
+        "beeper": "",
+        "viber": "",
         "slack": "",
         "slic3r.pl": "",
         "spotify": "",
@@ -159,7 +167,6 @@ if len(sys.argv) <= 2:
         "telegram": "",
         "kotatogram": "",
         "lunarclient": "",
-        "viber": "",
     }
 
 
@@ -177,7 +184,7 @@ if hide_name:
 
     def to_icon(name):
         try:
-            return class_icons[name.lower()] + " "
+            return "%{T" + polybar_font_num + "}" + class_icons[name.lower()] + "%{T-} "
         except KeyError:
             if not name.casefold().startswith("lunar client"):
                 return name[:char_limit]
@@ -188,7 +195,7 @@ else:
 
     def to_icon(name):
         try:
-            return class_icons[name.lower()] + " " + name[:char_limit]
+            return "%{T6}" + class_icons[name.lower()] + "%{T-} " + name[:char_limit]
         except KeyError:
             if not name.casefold().startswith("lunar client"):
                 return name[:char_limit]
@@ -243,12 +250,14 @@ def generate(workspaces, focused_desk, order):
     focused = os.popen(f"bspc query -N -m {mon_id} -n .focused").read()[
         :-1
     ]  # ID of the currently focused window
+    first_wps_id = None
     for workspace_id in order:
         if (
             len(workspaces[workspace_id][0]) < hide_unpopulated_desktops
             and workspace_id != focused_desk
         ):
             continue
+        first_wps_id = workspace_id if first_wps_id is None else first_wps_id
         printf(
             "%{A1:"
             + on_click
@@ -261,10 +270,12 @@ def generate(workspaces, focused_desk, order):
             + workspace_id
             + ":}"
             + wps_inactive_left
+            + ("%{F" + (wps_separator_color if wps_separator != "" else "-") + "}" + wps_separator + "%{F-}" if "I" not in workspaces[workspace_id] else "")
             + separator
             + (workspaces[workspace_id][1] if override_names is False else (override_names[1] if len(workspaces[workspace_id][0]) else override_names[0]))
             if workspace_id != focused_desk
             else wps_active_left
+            + ("%{F" + (wps_separator_color if wps_separator != "" else "-") if "I" not in workspaces[first_wps_id] else "%{F-}")
             + separator
             + (workspaces[workspace_id][1] if override_names is False else override_names[2])
         )
