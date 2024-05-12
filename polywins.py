@@ -270,12 +270,12 @@ def generate(workspaces, focused_desk, order):
             + workspace_id
             + ":}"
             + wps_inactive_left
-            + ("%{F" + (wps_separator_color if wps_separator != "" else "-") + "}" + wps_separator + "%{F-}" if "I" not in workspaces[workspace_id] else "")
+            + ("%{F" + (wps_separator_color if wps_separator != "" else "-") + "}" + wps_separator + "%{F-}" if first_wps_id != workspace_id else "")
             + separator
             + (workspaces[workspace_id][1] if override_names is False else (override_names[1] if len(workspaces[workspace_id][0]) else override_names[0]))
             if workspace_id != focused_desk
             else wps_active_left
-            + ("%{F" + (wps_separator_color if wps_separator != "" else "-") if "I" not in workspaces[first_wps_id] else "%{F-}")
+            + ("%{F" + (wps_separator_color if wps_separator != "" else "-") + "}" + wps_separator + "%{F-}" if first_wps_id != workspace_id else "")
             + separator
             + (workspaces[workspace_id][1] if override_names is False else override_names[2])
         )
